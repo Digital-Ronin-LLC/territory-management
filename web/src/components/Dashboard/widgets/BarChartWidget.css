@@ -6,25 +6,46 @@
   justify-content: center;
 }
 
-.custom-tooltip {
+.custom-bar-tooltip {
   background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  min-width: 120px;
 }
 
 .tooltip-label {
-  margin: 0;
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13px;
   color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .tooltip-value {
-  margin: 5px 0 0;
-  font-size: 13px;
-  color: #555;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d6efd;
+}
+
+/* Improve styling for chart elements */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #eaeaea;
+}
+
+.recharts-cartesian-axis-line {
+  stroke: #ddd;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: #666;
+  font-size: 12px;
+}
+
+.recharts-tooltip-cursor {
+  fill: rgba(200, 200, 200, 0.1);
 }
 
 /* Responsive adjustments */

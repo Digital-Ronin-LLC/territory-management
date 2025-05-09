@@ -40,10 +40,10 @@ export const mockData = {
   
   // AMSP Not Updated data
   amspNotUpdated: [
-    { name: 'AK', value: 11 },
-    { name: 'AL', value: 2 },
-    { name: 'AR', value: 1 },
     { name: 'AZ', value: 12 },
+    { name: 'AK', value: 11 },
+    { name: 'AR', value: 1 },
+    { name: 'AL', value: 2 },
     { name: 'CA', value: 10 },
     { name: 'CO', value: 3 },
     { name: 'CT', value: 1 },
@@ -140,7 +140,20 @@ export const mockData = {
       'Other': 2,
       'High Priority PPA Prospects': 1
     }
-  ]
+  ],
+  
+  // Agency Production Commitments data
+  agencyProdCommitments: [
+    { name: 'With Commitments', value: 35, color: '#4CAF50' },
+    { name: 'No Commitments', value: 65, color: '#FF9800' }
+  ],
+  
+  // Update AMSP Task data
+  updateAmspTask: {
+    total: 10,
+    onTime: 2,
+    overdue: 8
+  }
 };
 
 export default mockData;

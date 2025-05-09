@@ -1,15 +1,15 @@
 .sidebar {
   width: 250px;
   height: 100%;
-  background-color: #1c2536;
+  background-color: #1f2937;
   color: #fff;
   transition: width 0.3s ease;
   position: fixed;
   left: 0;
-  top: 60px;
+  top: 0;
   bottom: 0;
   z-index: 990;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar.closed {
@@ -17,17 +17,20 @@
   overflow: hidden;
 }
 
-.sidebar-header {
-  padding: 1.2rem 1rem;
+.sidebar-title-container {
+  padding: 1.2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 60px;
+  display: flex;
+  align-items: center;
 }
 
 .sidebar-title {
   margin: 0;
   font-size: 1.1rem;
-  white-space: nowrap;
   font-weight: 600;
-  line-height: 1;
+  color: white;
+  white-space: nowrap;
 }
 
 .sidebar.closed .sidebar-title {
@@ -62,7 +65,7 @@
 .menu-item.active .menu-link {
   background-color: rgba(255, 255, 255, 0.08);
   color: #fff;
-  border-left-color: #0d6efd;
+  border-left-color: #3b82f6;
 }
 
 .menu-icon {

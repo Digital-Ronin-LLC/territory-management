@@ -8,15 +8,15 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <div className="sidebar-header">
-        <h3 className="sidebar-title">Territory Management</h3>
+      <div className="sidebar-title-container">
+        <h1 className="sidebar-title">Territory Management</h1>
       </div>
       
       <nav className="sidebar-navigation">
         <ul className="menu-items">
           <li className="menu-item active">
             <a href="#" className="menu-link">
-              <i className="menu-icon fa fa-dashboard"></i>
+              <i className="menu-icon fa fa-tachometer-alt"></i>
               <span className="menu-text">Dashboard</span>
             </a>
           </li>
@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           </li>
           <li className="menu-item">
             <a href="#" className="menu-link">
-              <i className="menu-icon fa fa-user"></i>
+              <i className="menu-icon fa fa-address-book"></i>
               <span className="menu-text">Contacts</span>
             </a>
           </li>
@@ -52,13 +52,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           </li>
           <li className="menu-item">
             <a href="#" className="menu-link">
-              <i className="menu-icon fa fa-clipboard"></i>
+              <i className="menu-icon fa fa-file-alt"></i>
               <span className="menu-text">Reports</span>
             </a>
           </li>
           <li className="menu-item">
             <a href="#" className="menu-link">
-              <i className="menu-icon fa fa-cogs"></i>
+              <i className="menu-icon fa fa-cog"></i>
               <span className="menu-text">Settings</span>
             </a>
           </li>

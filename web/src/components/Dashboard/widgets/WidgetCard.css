@@ -1,7 +1,7 @@
 .widget-card {
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -9,6 +9,10 @@
   transition: all 0.3s ease;
   position: relative;
   border: 1px solid #e6e8eb;
+}
+
+.widget-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .widget-card.expanded {
@@ -30,11 +34,13 @@
   padding: 0.8rem 1rem;
   border-bottom: 1px solid #f1f3f4;
   background-color: #f8f9fa;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .widget-title {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #3d4465;
   white-space: nowrap;
@@ -119,4 +125,16 @@
 .widget-link:hover {
   text-decoration: underline;
   color: #0a58ca;
+}
+
+/* Drop shadow when chart is expanded */
+.widget-card.expanded::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: -1;
 }

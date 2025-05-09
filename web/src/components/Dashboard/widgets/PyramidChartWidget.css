@@ -1,0 +1,245 @@
+.pyramid-chart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 10px 0;
+}
+
+/* Total at the top */
+.pyramid-total {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  padding: 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f2f6ff, #e6f0ff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(144, 202, 249, 0.3);
+}
+
+.total-label {
+  font-size: 12px;
+  color: #6e7687;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.total-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Pyramid structure */
+.pyramid-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.pyramid-segment-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  justify-content: center;
+  min-height: 36px;
+}
+
+.pyramid-segment {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Variant styles */
+.pyramid-segment.gradient {
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+}
+
+.pyramid-segment.flat {
+  background-image: none;
+}
+
+.pyramid-segment.layered {
+  margin-top: -4px;
+  height: 40px;
+  z-index: 1;
+}
+
+.pyramid-segment.layered:first-child {
+  margin-top: 0;
+}
+
+.pyramid-segment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+/* Sparkle effect */
+.pyramid-segment::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+.pyramid-percentage {
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Labels */
+.pyramid-label {
+  display: flex;
+  flex-direction: column;
+  padding: 0 10px;
+  max-width: 120px;
+  overflow: hidden;
+}
+
+.pyramid-label.left {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.pyramid-label.right {
+  text-align: left;
+  align-items: flex-start;
+}
+
+.pyramid-label-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pyramid-label-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* Legend */
+.pyramid-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 5px;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.pyramid-legend-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.pyramid-legend-item:hover {
+  background-color: #e9ecef;
+}
+
+.pyramid-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.pyramid-legend-text {
+  font-size: 12px;
+  color: #495057;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.pyramid-legend-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.pyramid-legend-percentage {
+  font-size: 11px;
+  color: #6c757d;
+  margin-left: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pyramid-segment-wrapper {
+    flex-direction: column;
+    gap: 4px;
+    min-height: auto;
+    margin-bottom: 12px;
+  }
+  
+  .pyramid-label.left, 
+  .pyramid-label.right {
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    align-items: center;
+    padding: 0;
+  }
+  
+  .pyramid-segment {
+    width: 100% !important;
+  }
+  
+  .pyramid-legend {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .pyramid-legend-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -5,7 +5,7 @@ import { formatNumber, formatCurrency } from '../../utils/chartUtils';
 import MetricCard from '../../components/Dashboard/widgets/MetricCard';
 import BarChartWidget from '../../components/Dashboard/widgets/BarChartWidget';
 import PieChartWidget from '../../components/Dashboard/widgets/PieChartWidget';
-import FunnelChartWidget from '../../components/Dashboard/widgets/FunnelChartWidget';
+import PyramidChartWidget from '../../components/Dashboard/widgets/PyramidChartWidget';
 import ColumnChartWidget from '../../components/Dashboard/widgets/ColumnChartWidget';
 
 const Dashboard: React.FC = () => {
@@ -20,6 +20,51 @@ const Dashboard: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Transform AMSP data to include colors by state
+  const amspNotUpdatedColored = data.amspNotUpdated.map(item => ({
+    ...item,
+    color: getStateColor(item.name)
+  }));
+
+  // Transform agencies not reached with field to include colors by state
+  const agenciesNotReachedColored = data.agenciesNotReached.map(item => {
+    // Extract state from name if it contains a state code
+    let stateName = null;
+    const stateMatch = item.name.match(/\b(AK|AL|AR|AZ|CA|CO|CT|FL|GA|IA|IL|NY|OH|TX|WA)\b/);
+    if (stateMatch) {
+      stateName = stateMatch[0];
+    }
+    
+    return {
+      ...item,
+      color: stateName ? getStateColor(stateName) : undefined
+    };
+  });
+
+  // Helper function to get colors for states
+  function getStateColor(stateName: string): string {
+    const stateColors: Record<string, string> = {
+      'AZ': '#3399FF',
+      'AK': '#33CCCC', 
+      'CA': '#FFCC33',
+      'AL': '#FF6633',
+      'AR': '#9966CC',
+      'CO': '#33CC66',
+      'CT': '#6666FF',
+      'FL': '#FF9933',
+      'GA': '#CC6699',
+      'IA': '#6699FF',
+      'OH': '#33CC33',
+      'TX': '#FF6666',
+      'VA': '#9999FF',
+      'WA': '#66CCCC',
+      'OR': '#CCCC33',
+      'NY': '#CC33CC'
+    };
+    
+    return stateColors[stateName] || '#6699CC';
+  }
 
   return (
     <div className="dashboard-container">
@@ -58,6 +103,8 @@ const Dashboard: React.FC = () => {
             value={formatNumber(data.quotePremium.quoteCount)}
             subtitle="View Report (Production KPI Report)" 
             isLoading={isLoading}
+            color="#2196F3"
+            trend={{ value: 5.2, isPositive: true }}
           />
         </div>
         <div className="metric-item">
@@ -66,6 +113,8 @@ const Dashboard: React.FC = () => {
             value={formatCurrency(data.quotePremium.quotePremium)}
             subtitle="View Report (Production KPI Report)" 
             isLoading={isLoading}
+            color="#4CAF50"
+            trend={{ value: 7.8, isPositive: true }}
           />
         </div>
         <div className="metric-item">
@@ -74,6 +123,8 @@ const Dashboard: React.FC = () => {
             value={formatNumber(data.quotePremium.appCount)}
             subtitle="View Report (Production KPI Report)" 
             isLoading={isLoading}
+            color="#FF9800"
+            trend={{ value: 3.4, isPositive: true }}
           />
         </div>
         <div className="metric-item">
@@ -82,12 +133,47 @@ const Dashboard: React.FC = () => {
             value={formatCurrency(data.quotePremium.appPremium)}
             subtitle="View Report (Production KPI Report)" 
             isLoading={isLoading}
+            color="#9C27B0"
+            trend={{ value: 2.1, isPositive: false }}
           />
         </div>
       </div>
 
       {/* Charts Grid */}
       <div className="charts-grid">
+        <div className="chart-item">
+          <PyramidChartWidget
+            title="Agencies AMSP Not Updated in 12 Team"
+            subtitle="View Report (Agencies AMSP Not Updated in 12 Team)"
+            data={amspNotUpdatedColored.slice(0, 5)}
+            isLoading={isLoading}
+            labelPosition="right"
+            variant="gradient"
+            showTotal={true}
+          />
+        </div>
+        <div className="chart-item">
+          <BarChartWidget
+            title="Agencies Not Reached With Field - My Team"
+            subtitle="View Report (Agencies Not Reached With Field - My Team)"
+            data={agenciesNotReachedColored.slice(0, 5)}
+            isLoading={isLoading}
+            colorByName={true}
+            labelPosition="right"
+          />
+        </div>
+        <div className="chart-item">
+          <BarChartWidget
+            title="My Team's Open commitments"
+            subtitle="View Report (My Team's Open commitments)"
+            data={data.openCommitments.map(item => ({
+              ...item,
+              color: getStateColor(item.name.split('-')[1].trim())
+            }))}
+            isLoading={isLoading}
+            labelPosition="right"
+          />
+        </div>
         <div className="chart-item">
           <PieChartWidget
             title="My Team's Call Average Report"
@@ -117,46 +203,30 @@ const Dashboard: React.FC = () => {
           />
         </div>
         <div className="chart-item">
-          <FunnelChartWidget
-            title="Agencies AMSP Not Updated in 12 Team"
-            subtitle="View Report (Agencies AMSP Not Updated in 12 Team)"
-            data={data.amspNotUpdated.slice(0, 5)}
-            isLoading={isLoading}
-          />
-        </div>
-        <div className="chart-item">
-          <BarChartWidget
-            title="Agencies Not Reached With Field - My Team"
-            subtitle="View Report (Agencies Not Reached With Field - My Team)"
-            data={data.agenciesNotReached.slice(0, 5)}
-            isLoading={isLoading}
-          />
-        </div>
-        <div className="chart-item">
-          <BarChartWidget
-            title="My Team's Open commitments"
-            subtitle="View Report (My Team's Open commitments)"
-            data={data.openCommitments}
-            isLoading={isLoading}
-          />
-        </div>
-        <div className="chart-item">
-          <FunnelChartWidget
+          <PyramidChartWidget
             title="My Review Locations Completed 30days"
             subtitle="View Report (My Review Locations Completed 30days)"
-            data={[{ name: 'Overdue', value: data.reviewLocations.overdue }]}
+            data={[
+              { name: 'Overdue', value: data.reviewLocations.overdue, color: '#FF5733' }
+            ]}
             isLoading={isLoading}
+            labelPosition="right"
+            variant="layered"
+            totalLabel="Total Locations"
           />
         </div>
         <div className="chart-item">
-          <FunnelChartWidget
+          <PyramidChartWidget
             title="My Onboarding Task Completed in 5days"
             subtitle="View Report (My Onboarding Task Completed in 5days)"
             data={[
-              { name: 'On-Time', value: data.onboardingTask.onTime },
-              { name: 'Overdue', value: data.onboardingTask.overdue }
+              { name: 'On-Time', value: data.onboardingTask.onTime, color: '#4CAF50' },
+              { name: 'Overdue', value: data.onboardingTask.overdue, color: '#FF5733' }
             ]}
             isLoading={isLoading}
+            labelPosition="right"
+            variant="flat"
+            totalLabel="Total Tasks"
           />
         </div>
         <div className="chart-item">
@@ -178,6 +248,31 @@ const Dashboard: React.FC = () => {
             subtitle="View Report (Prospect Agent Conversion Report)"
             data={data.prospectConversion}
             isLoading={isLoading}
+          />
+        </div>
+        <div className="chart-item">
+          <PyramidChartWidget
+            title="My Team's Agency Prod Commitments YTD"
+            subtitle="View Report (My Team's Agency Prod Commitments YTD)"
+            data={data.agencyProdCommitments}
+            isLoading={isLoading}
+            variant="gradient"
+            labelPosition="right"
+            totalLabel="Total Agencies"
+          />
+        </div>
+        <div className="chart-item">
+          <PyramidChartWidget
+            title="My Update AMSP Task Completed in 30days"
+            subtitle="View Report (My Update AMSP Task Completed in 30days)"
+            data={[
+              { name: 'On-Time', value: data.updateAmspTask.onTime, color: '#4CAF50' },
+              { name: 'Overdue', value: data.updateAmspTask.overdue, color: '#FF5733' }
+            ]}
+            isLoading={isLoading}
+            labelPosition="right"
+            variant="layered"
+            totalLabel="Total Tasks"
           />
         </div>
       </div>

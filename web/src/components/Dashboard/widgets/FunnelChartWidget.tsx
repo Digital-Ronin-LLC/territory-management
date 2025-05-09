@@ -1,10 +1,6 @@
 import React from 'react';
-import {
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
-import WidgetCard from './WidgetCard';
 import './FunnelChartWidget.css';
+import WidgetCard from './WidgetCard';
 
 interface FunnelChartWidgetProps {
   title: string;
@@ -12,64 +8,97 @@ interface FunnelChartWidgetProps {
   data: Array<{
     name: string;
     value: number;
+    color?: string;
   }>;
   isLoading?: boolean;
+  showPercentages?: boolean;
+  labelPosition?: 'left' | 'right';
 }
 
-const FunnelChartWidget: React.FC<FunnelChartWidgetProps> = ({ title, subtitle, data, isLoading = false }) => {
+const FunnelChartWidget: React.FC<FunnelChartWidgetProps> = ({ 
+  title, 
+  subtitle, 
+  data, 
+  isLoading = false,
+  showPercentages = true,
+  labelPosition = 'left'
+}) => {
   // Sort data by value in descending order for the funnel effect
   const sortedData = [...data].sort((a, b) => b.value - a.value);
   
-  // Calculate total value
+  // Calculate total value for percentages
   const totalValue = sortedData.reduce((sum, item) => sum + item.value, 0);
   
-  // Generate colors for the funnel segments
-  const colors = [
-    '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', 
-    '#83a6ed', '#8dd1e1', '#82ca9d', '#a4de6c', '#d0ed57'
+  // Generate colors if not provided
+  const defaultColors = [
+    '#3399FF', '#33CCCC', '#33CC66', '#FFCC33', '#FF9933', 
+    '#FF6633', '#CC6699', '#9966CC', '#6666FF', '#6699FF'
   ];
-  
+
   return (
     <WidgetCard title={title} subtitle={subtitle} isLoading={isLoading}>
-      <div className="funnel-chart-container">
-        <div className="funnel-wrapper">
-          {sortedData.map((item, index) => {
-            // Calculate percentage for width and tooltip
-            const percentage = totalValue ? Math.round((item.value / totalValue) * 100) : 0;
-            // Calculate width percentage - add min width to ensure visibility
-            const widthPercentage = 30 + (percentage * 0.7);
-            
-            return (
+      <div className="modern-funnel-container">
+        {sortedData.map((item, index) => {
+          // Calculate percentage
+          const percentage = totalValue ? Math.round((item.value / totalValue) * 100) : 0;
+          // Calculate width percentage - ensure even small values are visible
+          const minWidth = 40; // Minimum width percentage
+          const maxWidth = 100; // Maximum width percentage
+          const widthPercentage = minWidth + ((maxWidth - minWidth) * (item.value / (sortedData[0]?.value || 1)));
+          
+          // Use provided color or default
+          const segmentColor = item.color || defaultColors[index % defaultColors.length];
+          
+          return (
+            <div className="funnel-segment-wrapper" key={index}>
+              {labelPosition === 'left' && (
+                <div className="funnel-label left">
+                  <span className="funnel-name">{item.name}</span>
+                </div>
+              )}
+              
               <div 
-                key={index} 
-                className="funnel-segment"
+                className="modern-funnel-segment"
                 style={{ 
                   width: `${widthPercentage}%`,
-                  backgroundColor: colors[index % colors.length]
+                  backgroundColor: segmentColor
                 }}
-                title={`${item.name}: ${item.value} (${percentage}%)`}
               >
-                <div className="funnel-data">
-                  <div className="funnel-label">{item.name}</div>
-                  <div className="funnel-value">{item.value}</div>
-                  <div className="funnel-percentage">{percentage}%</div>
-                </div>
+                <span className="funnel-value">{item.value}</span>
+                {showPercentages && (
+                  <span className="funnel-percentage">{percentage}%</span>
+                )}
               </div>
-            );
-          })}
-        </div>
-        
-        {/* Legend */}
-        <div className="funnel-legend">
-          {sortedData.map((item, index) => (
-            <div key={index} className="funnel-legend-item">
-              <span 
-                className="funnel-legend-color" 
-                style={{ backgroundColor: colors[index % colors.length] }}
-              ></span>
-              <span className="funnel-legend-text">{item.name}</span>
+              
+              {labelPosition === 'right' && (
+                <div className="funnel-label right">
+                  <span className="funnel-name">{item.name}</span>
+                </div>
+              )}
             </div>
-          ))}
+          );
+        })}
+        
+        {/* Progress Bar at Bottom */}
+        <div className="funnel-progress-container">
+          <div className="funnel-progress-bar">
+            {sortedData.map((item, index) => {
+              const percentage = totalValue ? (item.value / totalValue) * 100 : 0;
+              const segmentColor = item.color || defaultColors[index % defaultColors.length];
+              
+              return (
+                <div 
+                  key={index}
+                  className="funnel-progress-segment"
+                  style={{ 
+                    width: `${percentage}%`,
+                    backgroundColor: segmentColor
+                  }}
+                  title={`${item.name}: ${percentage.toFixed(1)}%`}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </WidgetCard>

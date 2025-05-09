@@ -9,14 +9,16 @@
 }
 
 .metric-value {
-  font-size: 2.5rem;
-  font-weight: 600;
+  font-size: 3.5rem;
+  font-weight: 700;
   color: #0d6efd;
-  min-height: 60px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: -1px;
 }
 
 .metric-trend {
@@ -56,11 +58,11 @@
 
 .loading-pulse {
   width: 80%;
-  height: 3rem;
+  height: 4rem;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: pulse 1.5s infinite;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 @keyframes pulse {

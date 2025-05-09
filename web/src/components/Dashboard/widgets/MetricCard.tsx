@@ -11,6 +11,7 @@ interface MetricCardProps {
     value: number;
     isPositive: boolean;
   };
+  color?: string;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ 
@@ -18,12 +19,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
   value, 
   subtitle, 
   isLoading = false,
-  trend 
+  trend,
+  color = '#0d6efd'
 }) => {
   return (
     <WidgetCard title={title} subtitle={subtitle} isLoading={isLoading}>
       <div className="metric-container">
-        <div className="metric-value">
+        <div className="metric-value" style={{ color }}>
           {isLoading ? <div className="loading-pulse"></div> : value}
         </div>
         
