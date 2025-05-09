@@ -1,0 +1,35 @@
+.bar-chart-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-tooltip {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-label {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.tooltip-value {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bar-chart-container {
+    min-height: 250px;
+  }
+}
