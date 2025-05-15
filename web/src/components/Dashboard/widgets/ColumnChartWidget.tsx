@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell
+  Label
 } from 'recharts';
 import WidgetCard from './WidgetCard';
 import './ColumnChartWidget.css';
@@ -32,6 +32,32 @@ const ColumnChartWidget: React.FC<ColumnChartWidgetProps> = ({ title, subtitle, 
   
   // Create a derived colors array to ensure we have enough colors
   const colors = keys.map((_, index) => baseColors[index % baseColors.length]);
+  
+  // Transform data to ensure categories are displayed correctly
+  // This is particularly important for the Prospect Agent Conversion Report
+  const transformedData = [...data].map(item => {
+    // Create a copy of the original item
+    const newItem = { ...item };
+    
+    // Check if this is the prospect conversion report by checking the title
+    if (title.includes("Prospect Agent Conversion")) {
+      // Create a new property for each name that exists, with its value
+      // This ensures categories are correctly positioned in the chart
+      const nameParts = newItem.name.split(' - ');
+      if (nameParts.length > 1) {
+        // Use the first part as the main category
+        newItem.category = nameParts[0];
+        // Use the second part as the subcategory if it exists
+        if (nameParts[1]) {
+          newItem.subcategory = nameParts[1];
+        }
+      } else {
+        newItem.category = newItem.name;
+      }
+    }
+    
+    return newItem;
+  });
   
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -67,12 +93,20 @@ const ColumnChartWidget: React.FC<ColumnChartWidgetProps> = ({ title, subtitle, 
     );
   };
 
+  const getDataKey = () => {
+    // For Prospect Agent Conversion, use the category field instead
+    if (title.includes("Prospect Agent Conversion")) {
+      return "category";
+    }
+    return "name";
+  };
+
   return (
     <WidgetCard title={title} subtitle={subtitle} isLoading={isLoading}>
       <div className="column-chart-container">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart
-            data={data}
+            data={transformedData}
             margin={{
               top: 20,
               right: 30,
@@ -81,10 +115,11 @@ const ColumnChartWidget: React.FC<ColumnChartWidgetProps> = ({ title, subtitle, 
             }}
             barGap={8}
             barSize={title.includes('Stacked') ? 30 : 16}
+            maxBarSize={50}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis 
-              dataKey="name" 
+              dataKey={getDataKey()}
               scale="band" 
               axisLine={false} 
               tickLine={false}
@@ -92,6 +127,7 @@ const ColumnChartWidget: React.FC<ColumnChartWidgetProps> = ({ title, subtitle, 
               angle={-45}
               textAnchor="end"
               height={70}
+              interval={0} // Show all ticks
             />
             <YAxis 
               axisLine={false}
@@ -105,6 +141,7 @@ const ColumnChartWidget: React.FC<ColumnChartWidgetProps> = ({ title, subtitle, 
               <Bar 
                 key={key} 
                 dataKey={key} 
+                name={key}
                 fill={colors[index]}
                 radius={[3, 3, 0, 0]}
                 stackId={title.includes('Stacked') ? 'stack' : undefined}

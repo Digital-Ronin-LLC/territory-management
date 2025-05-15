@@ -56,14 +56,13 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
       // Add gradient effect
       style.background = `linear-gradient(135deg, ${baseColor}, ${lightenColor(baseColor, 30)})`;
     } else if (variant === 'layered') {
-      // Add shadow for layered effect
-      style.boxShadow = `0 -4px 6px rgba(0, 0, 0, 0.1)`;
+      // Add shadow for layered effect only when hovered
+      style.boxShadow = hoveredIndex === index ? `0 4px 8px rgba(0, 0, 0, 0.15)` : 'none';
     }
     
     if (hoveredIndex === index) {
       // Enhanced hover effect
-      style.transform = 'translateY(-4px)';
-      style.boxShadow = `0 8px 16px rgba(0, 0, 0, 0.15)`;
+      style.transform = 'translateY(-2px)';
       style.zIndex = 5;
     }
     
@@ -101,7 +100,7 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
         )}
         
         {/* Pyramid Segments */}
-        <div className="pyramid-wrapper">
+        <div className={`pyramid-wrapper ${variant}`}>
           {sortedData.map((item, index) => {
             // Calculate percentage for width
             const percentage = totalValue ? (item.value / totalValue) * 100 : 0;
@@ -110,7 +109,7 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
             const maxWidth = 100;
             const minWidth = sortedData.length > 1 ? 25 : 50;
             
-            // Calculate pyramid width based on position in the sorted array
+            // Calculate funnel width based on position in the sorted array
             const position = index / (sortedData.length - 1 || 1);
             const widthPercentage = sortedData.length > 1 
               ? minWidth + ((maxWidth - minWidth) * (1 - position))

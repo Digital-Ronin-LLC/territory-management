@@ -40,7 +40,23 @@
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
-  gap: 4px;
+  gap: 0;
+  position: relative;
+}
+
+/* Different styles based on variants */
+.pyramid-wrapper.gradient .pyramid-segment {
+  margin-top: 0;
+}
+
+.pyramid-wrapper.layered .pyramid-segment {
+  margin-top: -1px; /* Connect segments with a small overlap */
+  clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%); /* Give a funnel shape */
+}
+
+.pyramid-wrapper.flat .pyramid-segment {
+  margin-top: -1px; /* Connect segments */
+  border-radius: 0;
 }
 
 .pyramid-segment-wrapper {
@@ -59,11 +75,24 @@
   justify-content: center;
   color: white;
   font-weight: 500;
-  border-radius: 4px;
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* First segment in the pyramid */
+.pyramid-segment-wrapper:first-child .pyramid-segment {
+  border-radius: 4px 4px 0 0;
+}
+
+/* Last segment in the pyramid */
+.pyramid-segment-wrapper:last-child .pyramid-segment {
+  border-radius: 0 0 4px 4px;
+}
+
+/* Only one segment */
+.pyramid-segment-wrapper:first-child:last-child .pyramid-segment {
+  border-radius: 4px;
 }
 
 /* Variant styles */
@@ -76,18 +105,11 @@
 }
 
 .pyramid-segment.layered {
-  margin-top: -4px;
-  height: 40px;
   z-index: 1;
 }
 
-.pyramid-segment.layered:first-child {
-  margin-top: 0;
-}
-
 .pyramid-segment:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px) scale(1.01);
   z-index: 10;
 }
 

@@ -1,20 +1,37 @@
-# Project Progress Log
+# Territory Management Dashboard Updates - Progress Log
 
-## May 9, 2025
+## May 15, 2025
 
-### Dashboard Component Implementation
-- Fixed syntax errors in the Dashboard.tsx file
-- Properly structured the component with correct parent containers for JSX elements
-- Enhanced Dashboard.css with responsive layout and proper styling
-- Fixed the issue with adjacent JSX elements by properly nesting them in container divs
-- Implemented proper component hierarchy with header, metrics container, and charts grid
-- Added responsive design breakpoints for different screen sizes
+### Fixed Widget Expansion Blinking Issue
+- Completely reworked the widget expansion mechanism using React Portal
+- The expanded widget now renders in a separate DOM container to prevent conflicts
+- Eliminated flickering and blinking when hovering over different areas of the page
+- Improved performance by using will-change CSS property and optimized animations
+- Added proper cleanup to prevent memory leaks
 
-Key implementations:
-1. Fixed the syntax error where JSX elements weren't properly wrapped in a parent container
-2. Created a structured dashboard layout with header, metrics section, and charts grid
-3. Added responsive grid layout that adapts to different screen sizes
-4. Improved the visual styling with shadows, hover effects, and proper spacing
-5. Ensured proper nesting of components and correct usage of props
-6. Implemented color theming for different states and chart types
-7. Added SVG icons for UI elements like refresh button and dropdowns
+### Technical Implementation Details
+- Used React's createPortal to render expanded widgets in a separate DOM container
+- Created a dedicated modal root element for all expanded widgets
+- Implemented proper focus management and keyboard accessibility
+- Added smooth transitions with CSS animations
+- Fixed z-index issues that were causing rendering conflicts
+- Added will-change properties to optimize browser rendering performance
+- Improved event handling to prevent propagation issues
+- Fixed body scroll locking to prevent background scrolling when modal is open
+
+### Previous Updates
+
+#### PyramidChartWidget Improvements
+- Updated the PyramidChartWidget to create a seamless funnel chart appearance
+- Modified the CSS to connect segments together without gaps
+- Added "layered" variant with proper funnel shape using clip-path
+- Improved hover effects for better user interaction
+- Fixed segment border-radius to only apply to the top of the first segment and bottom of the last segment
+- Added consistent styling across different variants (gradient, flat, layered)
+
+#### ColumnChartWidget Fixes
+- Fixed issue with data overlaying in Prospect Agent Conversion Report
+- Added data transformation logic to handle prospect status labels correctly
+- Improved label positioning and visibility in charts
+- Ensured all data points are displayed without truncation
+- Enhanced chart readability with better spacing and margins

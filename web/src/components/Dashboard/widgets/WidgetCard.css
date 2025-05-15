@@ -15,16 +15,73 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
-.widget-card.expanded {
+/* Modal root container */
+#widget-modal-root {
   position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
-  height: 80%;
-  max-width: 1200px;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Modal overlay */
+.widget-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  animation: fadeIn 0.2s ease-in;
+  will-change: opacity;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal content */
+.widget-modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  height: 80vh;
+  max-width: 1200px;
+  max-height: 800px;
+  animation: scaleIn 0.2s ease-in;
+  will-change: transform;
+  position: relative;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Disable scrolling when modal is open */
+body.widget-expanded {
+  overflow: hidden;
 }
 
 .widget-header {
@@ -36,6 +93,7 @@
   background-color: #f8f9fa;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+  z-index: 10;
 }
 
 .widget-title {
@@ -51,6 +109,7 @@
 .widget-controls {
   display: flex;
   gap: 0.25rem;
+  z-index: 15; /* Ensure controls are above other elements */
 }
 
 .widget-control {
@@ -61,9 +120,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.2rem;
+  padding: 0.4rem;
   border-radius: 4px;
   transition: all 0.2s;
+  will-change: background-color, color;
+  z-index: 15;
 }
 
 .widget-control:hover {
@@ -74,11 +135,15 @@
 .widget-content {
   flex: 1;
   padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   min-height: 220px;
+  overflow-y: auto;
+  will-change: transform; /* Optimize rendering */
+}
+
+.widget-modal .widget-content {
+  min-height: unset;
+  height: calc(100% - 110px); /* Account for header and footer */
 }
 
 .widget-content.loading {
@@ -127,14 +192,16 @@
   color: #0a58ca;
 }
 
-/* Drop shadow when chart is expanded */
-.widget-card.expanded::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: -1;
+/* Focus management */
+.widget-control:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .widget-modal {
+    width: 90%;
+    height: 90vh;
+  }
 }
