@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import ReactEcharts from 'echarts-for-react';
+import * as echarts from 'echarts/core';
+
 import './PyramidChartWidget.css';
 import WidgetCard from './WidgetCard';
 
@@ -18,10 +21,10 @@ interface PyramidChartWidgetProps {
   totalLabel?: string;
 }
 
-const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({ 
-  title, 
-  subtitle, 
-  data, 
+const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
+  title,
+  subtitle,
+  data,
   isLoading = false,
   showPercentages = true,
   labelPosition = 'right',
@@ -29,47 +32,115 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
   showTotal = true,
   totalLabel = 'Total'
 }) => {
-  // Sort data by value in descending order for the pyramid effect
-  const sortedData = [...data].sort((a, b) => b.value - a.value);
-  
-  // Calculate total value for percentages
-  const totalValue = sortedData.reduce((sum, item) => sum + item.value, 0);
-  
-  // Generate colors if not provided
+  // Default colors if not provided
   const defaultColors = [
     '#4361ee', '#3a0ca3', '#4895ef', '#4cc9f0', '#560bad',
     '#f72585', '#7209b7', '#3f37c9', '#4cc9f0', '#480ca8'
   ];
 
-  // State for hovered segment
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // Sort data by value in descending order for the funnel effect
+  const [sortedData, setSortedData] = useState([...data].sort((a, b) => b.value - a.value));
+  
+  // Calculate total value for percentages
+  const totalValue = sortedData.reduce((sum, item) => sum + item.value, 0);
+  
+  // Update sorted data when data changes
+  useEffect(() => {
+    setSortedData([...data].sort((a, b) => b.value - a.value));
+  }, [data]);
 
-  // Helper function to determine color based on variant
-  const getSegmentStyle = (item: any, index: number) => {
-    const baseColor = item.color || defaultColors[index % defaultColors.length];
+  // Transform data for ECharts funnel chart
+  const transformedData = sortedData.map(item => ({
+    value: item.value,
+    name: item.name,
+    itemStyle: {
+      color: item.color || defaultColors[sortedData.indexOf(item) % defaultColors.length]
+    }
+  }));
+
+  // Prepare options for ECharts
+  const getOption = () => {
+    // Determine the label position
+    const labelPosition2 = labelPosition === 'right' ? 'right' : 'left';
     
-    let style: React.CSSProperties = {
-      backgroundColor: baseColor,
+    // Define the funnel chart option
+    const option = {
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => {
+          const { name, value, percent } = params;
+          return `${name}: ${value} (${percent}%)`;
+        }
+      },
+      legend: {
+        show: false, // Hide default legend, we'll use custom legend
+      },
+      series: [{
+        name: title,
+        type: 'funnel',
+        left: '10%',
+        top: 10,
+        bottom: 10,
+        width: '80%',
+        min: 0,
+        max: totalValue,
+        minSize: '20%',
+        maxSize: '100%',
+        sort: 'descending',
+        gap: variant === 'layered' ? 2 : 0, // Gap between segments based on variant
+        funnelAlign: 'center',
+        label: {
+          show: showPercentages,
+          position: 'inside',
+          formatter: (params: any) => {
+            return `${params.percent}%`;
+          },
+          fontWeight: 'bold',
+          color: '#fff',
+          fontSize: 12,
+          textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'
+        },
+        emphasis: {
+          label: {
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        itemStyle: {
+          borderColor: variant === 'layered' ? '#fff' : 'transparent',
+          borderWidth: variant === 'layered' ? 1 : 0,
+          // Apply gradient based on variant
+          color: (params: any) => {
+            if (variant === 'gradient') {
+              const baseColor = params.data.itemStyle.color;
+              return {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 1,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: baseColor },
+                  { offset: 1, color: lightenColor(baseColor, 30) }
+                ]
+              };
+            }
+            return params.data.itemStyle.color;
+          }
+        },
+        data: transformedData
+      }]
     };
     
-    if (variant === 'gradient') {
-      // Add gradient effect
-      style.background = `linear-gradient(135deg, ${baseColor}, ${lightenColor(baseColor, 30)})`;
-    } else if (variant === 'layered') {
-      // Add shadow for layered effect only when hovered
-      style.boxShadow = hoveredIndex === index ? `0 4px 8px rgba(0, 0, 0, 0.15)` : 'none';
-    }
-    
-    if (hoveredIndex === index) {
-      // Enhanced hover effect
-      style.transform = 'translateY(-2px)';
-      style.zIndex = 5;
-    }
-    
-    return style;
+    return option;
   };
 
-  // Helper function to lighten a color
+  // Helper function to lighten a color for gradients
   const lightenColor = (color: string, percent: number) => {
     // Remove the # if it exists
     let hex = color.replace('#', '');
@@ -88,6 +159,34 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
 
+  // Handle legend hover to highlight corresponding funnel segment
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
+  // Get chart instance for highlighting
+  const [chartInstance, setChartInstance] = useState<any>(null);
+  
+  const onChartReady = (instance: any) => {
+    setChartInstance(instance);
+  };
+
+  // Effect to handle highlight when hoveredIndex changes
+  useEffect(() => {
+    if (chartInstance && hoveredIndex !== null) {
+      // Highlight the segment
+      chartInstance.dispatchAction({
+        type: 'highlight',
+        seriesIndex: 0,
+        dataIndex: hoveredIndex
+      });
+    } else if (chartInstance && hoveredIndex === null) {
+      // Remove all highlights
+      chartInstance.dispatchAction({
+        type: 'downplay',
+        seriesIndex: 0
+      });
+    }
+  }, [hoveredIndex, chartInstance]);
+
   return (
     <WidgetCard title={title} subtitle={subtitle} isLoading={isLoading}>
       <div className="pyramid-chart-container">
@@ -99,59 +198,18 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
           </div>
         )}
         
-        {/* Pyramid Segments */}
-        <div className={`pyramid-wrapper ${variant}`}>
-          {sortedData.map((item, index) => {
-            // Calculate percentage for width
-            const percentage = totalValue ? (item.value / totalValue) * 100 : 0;
-            
-            // Calculate width percentage - ensure even small values are visible
-            const maxWidth = 100;
-            const minWidth = sortedData.length > 1 ? 25 : 50;
-            
-            // Calculate funnel width based on position in the sorted array
-            const position = index / (sortedData.length - 1 || 1);
-            const widthPercentage = sortedData.length > 1 
-              ? minWidth + ((maxWidth - minWidth) * (1 - position))
-              : maxWidth;
-            
-            return (
-              <div className="pyramid-segment-wrapper" key={index}>
-                {labelPosition === 'left' && (
-                  <div className="pyramid-label left">
-                    <span className="pyramid-label-name">{item.name}</span>
-                    <span className="pyramid-label-value">{item.value.toLocaleString()}</span>
-                  </div>
-                )}
-                
-                <div 
-                  className={`pyramid-segment ${variant}`}
-                  style={{
-                    ...getSegmentStyle(item, index),
-                    width: `${widthPercentage}%`,
-                  }}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  {showPercentages && (
-                    <span className="pyramid-percentage">
-                      {percentage.toFixed(1)}%
-                    </span>
-                  )}
-                </div>
-                
-                {labelPosition === 'right' && (
-                  <div className="pyramid-label right">
-                    <span className="pyramid-label-name">{item.name}</span>
-                    <span className="pyramid-label-value">{item.value.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        {/* ECharts Funnel Chart */}
+        <div className="echarts-funnel-wrapper">
+          <ReactEcharts
+            option={getOption()}
+            style={{ height: '260px', width: '100%' }}
+            onChartReady={onChartReady}
+            notMerge={true}
+            lazyUpdate={false}
+          />
         </div>
         
-        {/* Legend */}
+        {/* Custom Legend */}
         <div className="pyramid-legend">
           {sortedData.map((item, index) => (
             <div 
