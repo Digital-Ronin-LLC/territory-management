@@ -13,6 +13,8 @@ import {
 import WidgetCard from './WidgetCard';
 import './BarChartWidget.css';
 
+//Add more states and colors as needed
+
 interface BarChartWidgetProps {
   title: string;
   subtitle?: string;
