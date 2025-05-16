@@ -2,6 +2,32 @@
 
 ## May 16, 2025
 
+### Fixed ECharts Runtime Errors
+- Resolved "Cannot read properties of undefined (reading 'get')" error
+- Completely refactored PyramidChartWidget to be more robust
+- Simplified chart state management to prevent access to undefined objects
+- Added error boundaries and defensive programming to handle edge cases
+- Improved WidgetCard to initialize modal root safely outside of render cycle
+- Added fallbacks and error handling in critical component sections
+
+### Technical Implementation Details
+- Completely rewrote the PyramidChartWidget component with a safe implementation
+- Removed direct access to chart methods that could cause errors
+- Used a cleaner state management approach with useState instead of useRef for data
+- Added proper null checks and error handling throughout components
+- Fixed modal root initialization to happen once outside of component rendering
+- Added error prevention for link clicks to avoid page navigation
+- Enhanced the CSS for better visualization and error state handling
+- Restructured component code for better maintainability
+
+### Fixed Maximum Update Depth Error in Funnel Charts
+- Resolved infinite loop issue causing "Maximum update depth exceeded" error
+- Optimized PyramidChartWidget to prevent unnecessary re-renders
+- Implemented React.memo and useCallback for better performance
+- Fixed issues with state updates during render cycle
+- Used useRef to store values that shouldn't trigger re-renders
+- Enhanced WidgetCard component to prevent unnecessary state updates
+
 ### Implemented ECharts Funnel Chart
 - Replaced the custom pyramid chart implementation with ECharts' funnel chart
 - Added echarts and echarts-for-react dependencies to package.json
@@ -11,14 +37,6 @@
 - Improved responsiveness of the chart
 - Added ability to customize funnel appearance through variants (gradient, flat, layered)
 
-### Technical Implementation Details
-- Used ReactEcharts wrapper for smooth integration with React
-- Implemented proper data transformation for ECharts format
-- Added custom styling options to match design requirements
-- Retained custom legend implementation for consistency with other charts
-- Fixed layout issues with chart container sizing
-- Preserved the existing API for seamless integration with the rest of the application
-
 ## May 15, 2025
 
 ### Fixed Widget Expansion Blinking Issue
@@ -27,16 +45,6 @@
 - Eliminated flickering and blinking when hovering over different areas of the page
 - Improved performance by using will-change CSS property and optimized animations
 - Added proper cleanup to prevent memory leaks
-
-### Technical Implementation Details
-- Used React's createPortal to render expanded widgets in a separate DOM container
-- Created a dedicated modal root element for all expanded widgets
-- Implemented proper focus management and keyboard accessibility
-- Added smooth transitions with CSS animations
-- Fixed z-index issues that were causing rendering conflicts
-- Added will-change properties to optimize browser rendering performance
-- Improved event handling to prevent propagation issues
-- Fixed body scroll locking to prevent background scrolling when modal is open
 
 ### PyramidChartWidget Improvements
 - Updated the PyramidChartWidget to create a seamless funnel chart appearance

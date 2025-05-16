@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import ReactEcharts from 'echarts-for-react';
 import * as echarts from 'echarts/core';
-
 import './PyramidChartWidget.css';
 import WidgetCard from './WidgetCard';
 
@@ -38,42 +37,45 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
     '#f72585', '#7209b7', '#3f37c9', '#4cc9f0', '#480ca8'
   ];
 
-  // Sort data by value in descending order for the funnel effect
-  const [sortedData, setSortedData] = useState([...data].sort((a, b) => b.value - a.value));
+  // Process data when it changes
+  const [processedData, setProcessedData] = useState(() => {
+    return {
+      sortedData: [...data].sort((a, b) => b.value - a.value),
+      totalValue: data.reduce((sum, item) => sum + item.value, 0)
+    };
+  });
   
-  // Calculate total value for percentages
-  const totalValue = sortedData.reduce((sum, item) => sum + item.value, 0);
-  
-  // Update sorted data when data changes
+  // Update processed data when props change
   useEffect(() => {
-    setSortedData([...data].sort((a, b) => b.value - a.value));
+    setProcessedData({
+      sortedData: [...data].sort((a, b) => b.value - a.value),
+      totalValue: data.reduce((sum, item) => sum + item.value, 0)
+    });
   }, [data]);
-
-  // Transform data for ECharts funnel chart
-  const transformedData = sortedData.map(item => ({
-    value: item.value,
-    name: item.name,
-    itemStyle: {
-      color: item.color || defaultColors[sortedData.indexOf(item) % defaultColors.length]
-    }
-  }));
-
-  // Prepare options for ECharts
-  const getOption = () => {
-    // Determine the label position
-    const labelPosition2 = labelPosition === 'right' ? 'right' : 'left';
+  
+  // Track hover state
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
+  // Generate chart options
+  const getChartOption = useCallback(() => {
+    const { sortedData } = processedData;
+    
+    // Transform data for ECharts funnel chart
+    const chartData = sortedData.map((item, index) => ({
+      value: item.value,
+      name: item.name,
+      itemStyle: {
+        color: item.color || defaultColors[index % defaultColors.length]
+      }
+    }));
     
     // Define the funnel chart option
-    const option = {
+    return {
       tooltip: {
         trigger: 'item',
         formatter: (params: any) => {
-          const { name, value, percent } = params;
-          return `${name}: ${value} (${percent}%)`;
+          return `${params.name}: ${params.value} (${params.percent}%)`;
         }
-      },
-      legend: {
-        show: false, // Hide default legend, we'll use custom legend
       },
       series: [{
         name: title,
@@ -83,61 +85,72 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
         bottom: 10,
         width: '80%',
         min: 0,
-        max: totalValue,
-        minSize: '20%',
         maxSize: '100%',
+        minSize: '20%',
         sort: 'descending',
-        gap: variant === 'layered' ? 2 : 0, // Gap between segments based on variant
-        funnelAlign: 'center',
+        gap: variant === 'layered' ? 2 : 0,
         label: {
           show: showPercentages,
           position: 'inside',
-          formatter: (params: any) => {
-            return `${params.percent}%`;
-          },
-          fontWeight: 'bold',
-          color: '#fff',
+          formatter: '{d}%',
           fontSize: 12,
-          textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'
+          fontWeight: 'bold',
+          color: '#fff'
+        },
+        itemStyle: {
+          borderColor: variant === 'layered' ? '#fff' : 'transparent',
+          borderWidth: variant === 'layered' ? 1 : 0
         },
         emphasis: {
           label: {
             fontSize: 14,
             fontWeight: 'bold'
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
           }
         },
-        itemStyle: {
-          borderColor: variant === 'layered' ? '#fff' : 'transparent',
-          borderWidth: variant === 'layered' ? 1 : 0,
-          // Apply gradient based on variant
-          color: (params: any) => {
-            if (variant === 'gradient') {
-              const baseColor = params.data.itemStyle.color;
-              return {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 1,
-                y2: 1,
-                colorStops: [
-                  { offset: 0, color: baseColor },
-                  { offset: 1, color: lightenColor(baseColor, 30) }
-                ]
-              };
-            }
-            return params.data.itemStyle.color;
-          }
-        },
-        data: transformedData
+        data: chartData
       }]
     };
+  }, [processedData, title, variant, showPercentages, defaultColors]);
+  
+  // Safe way to handle legend hover
+  const handleLegendHover = useCallback((index: number) => {
+    setHoveredIndex(index);
+  }, []);
+  
+  const handleLegendLeave = useCallback(() => {
+    setHoveredIndex(null);
+  }, []);
+  
+  // Safely render legend
+  const renderLegend = () => {
+    const { sortedData, totalValue } = processedData;
     
-    return option;
+    return (
+      <div className="pyramid-legend">
+        {sortedData.map((item, index) => (
+          <div 
+            key={`legend-${index}-${item.name}`}
+            className={`pyramid-legend-item ${hoveredIndex === index ? 'active' : ''}`}
+            onMouseEnter={() => handleLegendHover(index)}
+            onMouseLeave={handleLegendLeave}
+          >
+            <span 
+              className="pyramid-legend-color" 
+              style={{ backgroundColor: item.color || defaultColors[index % defaultColors.length] }}
+            ></span>
+            <span className="pyramid-legend-text">{item.name}</span>
+            <span className="pyramid-legend-value">
+              {item.value.toLocaleString()}
+              {showPercentages && totalValue > 0 && (
+                <span className="pyramid-legend-percentage">
+                  ({((item.value / totalValue) * 100).toFixed(1)}%)
+                </span>
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // Helper function to lighten a color for gradients
@@ -159,34 +172,6 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
 
-  // Handle legend hover to highlight corresponding funnel segment
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
-  // Get chart instance for highlighting
-  const [chartInstance, setChartInstance] = useState<any>(null);
-  
-  const onChartReady = (instance: any) => {
-    setChartInstance(instance);
-  };
-
-  // Effect to handle highlight when hoveredIndex changes
-  useEffect(() => {
-    if (chartInstance && hoveredIndex !== null) {
-      // Highlight the segment
-      chartInstance.dispatchAction({
-        type: 'highlight',
-        seriesIndex: 0,
-        dataIndex: hoveredIndex
-      });
-    } else if (chartInstance && hoveredIndex === null) {
-      // Remove all highlights
-      chartInstance.dispatchAction({
-        type: 'downplay',
-        seriesIndex: 0
-      });
-    }
-  }, [hoveredIndex, chartInstance]);
-
   return (
     <WidgetCard title={title} subtitle={subtitle} isLoading={isLoading}>
       <div className="pyramid-chart-container">
@@ -194,49 +179,36 @@ const PyramidChartWidget: React.FC<PyramidChartWidgetProps> = ({
         {showTotal && (
           <div className="pyramid-total">
             <div className="total-label">{totalLabel}</div>
-            <div className="total-value">{totalValue.toLocaleString()}</div>
+            <div className="total-value">{processedData.totalValue.toLocaleString()}</div>
           </div>
         )}
         
-        {/* ECharts Funnel Chart */}
+        {/* Chart Component */}
         <div className="echarts-funnel-wrapper">
-          <ReactEcharts
-            option={getOption()}
-            style={{ height: '260px', width: '100%' }}
-            onChartReady={onChartReady}
-            notMerge={true}
-            lazyUpdate={false}
-          />
+          {/* Render the chart only when data is available and not empty */}
+          {processedData.sortedData.length > 0 && (
+            <ReactEcharts
+              option={getChartOption()}
+              style={{ height: '260px', width: '100%' }}
+              opts={{ renderer: 'canvas' }}
+              notMerge={true}
+              lazyUpdate={true}
+            />
+          )}
+          
+          {/* Show placeholder when no data */}
+          {processedData.sortedData.length === 0 && !isLoading && (
+            <div className="no-data-placeholder">
+              No data available
+            </div>
+          )}
         </div>
         
-        {/* Custom Legend */}
-        <div className="pyramid-legend">
-          {sortedData.map((item, index) => (
-            <div 
-              key={index} 
-              className="pyramid-legend-item"
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              <span 
-                className="pyramid-legend-color" 
-                style={{ backgroundColor: item.color || defaultColors[index % defaultColors.length] }}
-              ></span>
-              <span className="pyramid-legend-text">{item.name}</span>
-              <span className="pyramid-legend-value">
-                {item.value.toLocaleString()}
-                {showPercentages && totalValue > 0 && (
-                  <span className="pyramid-legend-percentage">
-                    ({((item.value / totalValue) * 100).toFixed(1)}%)
-                  </span>
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* Legend */}
+        {renderLegend()}
       </div>
     </WidgetCard>
   );
 };
 
-export default PyramidChartWidget;
+export default React.memo(PyramidChartWidget);
